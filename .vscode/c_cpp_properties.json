@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Kext",
+            "includePath": [
+                "./MacPPCKernelSDK/Headers",
+                "./include"
+            ],
+            "defines": [
+                "KERNEL",
+                "__BIG_ENDIAN__",
+                "DEBUG",
+                "__ppc__"
+            ],
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "forcedInclude": [
+                "${workspaceFolder}/.vscode/vscode-preinclude.h"
+            ]
+        }
+    ],
+    "version": 4
+}

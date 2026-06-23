@@ -1,0 +1,11 @@
+.DS_Store
+DerivedData
+xcuserdata
+project.xcworkspace
+build*
+build_kext*
+/build_pkg*
+xcshareddata
+MacPPCKernelSDK
+/*.mkext
+/*.zip
