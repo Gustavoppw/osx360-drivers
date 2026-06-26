@@ -20,13 +20,15 @@ class XenonDVDDevice : public IOSCSIPeripheralDeviceType05 {
   typedef IOSCSIPeripheralDeviceType05 super;
 
 public:
-  // Overrides.
-  bool init(OSDictionary *dictionary = 0);
+  // IOService overrides.
   bool start(IOService *provider);
+  void free(void);
+
+  // IOSCSIMultimediaCommandsDevice overrides.
   IOReturn EjectTheMedia(void);
 
 protected:
-  // Overrides.
+  // IOSCSIMultimediaCommandsDevice overrides.
   IOReturn GetMechanicalCapabilities(void);
 
 private:

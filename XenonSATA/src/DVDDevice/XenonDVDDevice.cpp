@@ -10,29 +10,22 @@
 OSDefineMetaClassAndStructors(XenonDVDDevice, super);
 
 //
-// Overrides IOSCSIPeripheralDeviceType05::init().
-//
-bool XenonDVDDevice::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _xenonSMC = NULL;
-
-  return super::init(dictionary);
-}
-
-//
-// Overrides IOSCSIPeripheralDeviceType05::start().
+// Performs driver startup.
+// Overrides IOService::start().
 //
 bool XenonDVDDevice::start(IOService *provider) {
   mach_timespec_t t;
 
-  XEDBGLOG("start");
+  XenonCheckDebugArgs();
+  XEDBGLOG("Starting DVD device");
 
   t.tv_sec = 30;
   t.tv_nsec = 0;
 
   _xenonSMC = waitForService(serviceMatching("XenonSMC"), &t);
-  if (_xenonSMC == NULL) {
+  if (_xenonSMC != NULL) {
+    _xenonSMC->retain();
+  } else {
     XESYSLOG("SMC services not available");
   }
 
@@ -40,12 +33,23 @@ bool XenonDVDDevice::start(IOService *provider) {
 }
 
 //
-// Overrides IOSCSIPeripheralDeviceType05::EjectTheMedia().
+// Releases driver resources.
+// Overrides IOService::free().
+//
+void XenonDVDDevice::free(void) {
+  OSSafeReleaseNULL(_xenonSMC);
+  super::free();
+}
+
+//
+// Ejects the CD/DVD tray.
+// On Xbox 360, the tray will not actually eject normally, so instruct the SMC to do so.
+// Overrides IOSCSIMultimediaCommandsDevice::EjectTheMedia().
 //
 IOReturn XenonDVDDevice::EjectTheMedia(void) {
   IOReturn status;
 
-  XEDBGLOG("start");
+  XEDBGLOG("Ejecting tray");
 
   status = super::EjectTheMedia();
   if ((status == kIOReturnSuccess) && (_xenonSMC != NULL)) {
@@ -56,12 +60,11 @@ IOReturn XenonDVDDevice::EjectTheMedia(void) {
 }
 
 //
-// Overrides IOSCSIPeripheralDeviceType05::GetMechanicalCapabilities().
+// Gets the capabilities of the CD/DVD drive.
+// Overrides IOSCSIMultimediaCommandsDevice::GetMechanicalCapabilities().
 //
 IOReturn XenonDVDDevice::GetMechanicalCapabilities(void) {
   IOReturn status = super::GetMechanicalCapabilities();
-
-  XEDBGLOG("start");
 
   // GetMechanicalCapabilities() fails on this particular drive, ensure DVD is supported.
   fSupportedCDFeatures |= kCDFeaturesReadStructuresMask;
