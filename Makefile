@@ -3,7 +3,7 @@ export OSX_VERSION	:=	jaguar
 include common/kext_info.mk
 
 BUILD_PKG	:=	build_pkg_$(OSX_VERSION)
-KEXTS		:=	XenonPlatform XenonPCI XenonSATA XenonSMC
+KEXTS		:=	XenonPlatform XenonPCI XenonEthernet XenonSATA XenonSMC
 MKEXT_NAME	:=	Xbox360.mkext
 ARCHIVE_ZIP	:= 	Xeintosh-osx-drivers-$(KEXT_VERSION).zip
 
