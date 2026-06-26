@@ -49,7 +49,6 @@ class XenonEthernet : public IOEthernetController {
 
 public:
   // IOService overrides.
-  bool init(OSDictionary *dictionary = 0);
   bool start(IOService *provider);
   void free(void);
 
@@ -67,7 +66,7 @@ public:
   IOReturn getHardwareAddress(IOEthernetAddress *addrP);
 
 private:
-  IOPCIDevice         *_pciDevice;
+  IOPCIDevice         *_pciParent;
   IOMemoryMap         *_mmioMap;
   volatile void       *_mmioMem;
   UInt32              _phyAddr;

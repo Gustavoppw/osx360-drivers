@@ -10,31 +10,18 @@
 OSDefineMetaClassAndStructors(XenonEthernet, super);
 
 //
-// Overrides IOService::init().
-//
-bool XenonEthernet::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _debugEnabled = true;
-
-  _mmioMap = NULL;
-  _mmioMem = NULL;
-  _isEnabled = false;
-
-  return super::init(dictionary);
-}
-
-//
 // Performs driver startup.
 // Overrides IOService::start().
 //
 bool XenonEthernet::start(IOService *provider) {
-  _pciDevice = OSDynamicCast(IOPCIDevice, provider);
-  if (_pciDevice == NULL) {
+  XenonCheckDebugArgs();
+
+  _pciParent = OSDynamicCast(IOPCIDevice, provider);
+  if (_pciParent == NULL) {
     XESYSLOG("Provider is not IOPCIDevice");
     return false;
   }
-  _pciDevice->retain();
+  _pciParent->retain();
 
   if (!super::start(provider)) {
     XESYSLOG("super::start() returned false");
@@ -42,12 +29,12 @@ bool XenonEthernet::start(IOService *provider) {
   }
 
   // Ensure PCI device is ready.
-  _pciDevice->setBusMasterEnable(true);
-  _pciDevice->setMemoryEnable(true);
-  _pciDevice->setIOEnable(false);
+  _pciParent->setBusMasterEnable(true);
+  _pciParent->setMemoryEnable(true);
+  _pciParent->setIOEnable(false);
 
   // Map in MMIO registers.
-  _mmioMap = _pciDevice->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress0);
+  _mmioMap = _pciParent->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress0);
   if (_mmioMap == NULL) {
     XESYSLOG("Failed to map Ethernet registers");
     return false;
@@ -57,7 +44,6 @@ bool XenonEthernet::start(IOService *provider) {
   XEDBGLOG("Mapped Ethernet registers at 0x%X length 0x%X to %p", _mmioMap->getPhysicalAddress(),
     _mmioMap->getLength(), _mmioMem);
 
-  // Get TX queue.
   _txQueue = getOutputQueue();
   if (_txQueue == NULL) {
     XESYSLOG("Failed to get output queue");
@@ -70,7 +56,6 @@ bool XenonEthernet::start(IOService *provider) {
     return false;
   }
 
-  // Create the interrupt.
   _intEventSource = IOInterruptEventSource::interruptEventSource(this,
     OSMemberFunctionCast(IOInterruptEventSource::Action, this, &XenonEthernet::handleInterrupt), getProvider(), 0);
   if ((_intEventSource == NULL) || (getWorkLoop()->addEventSource(_intEventSource) != kIOReturnSuccess)) {
@@ -121,7 +106,7 @@ IOReturn XenonEthernet::enable(IONetworkInterface *interface) {
     return kIOReturnIOError;
   }
 
-  if (!_pciDevice->open(this)) {
+  if (!_pciParent->open(this)) {
     return kIOReturnIOError;
   }
 
