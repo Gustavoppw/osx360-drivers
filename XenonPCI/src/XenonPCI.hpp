@@ -20,9 +20,11 @@ class XenonPCI : public IOPCIBridge {
   typedef IOPCIBridge super;
 
 public:
-  // Overrides.
-  bool init(OSDictionary *dictionary = 0);
+  // IOService overrides.
   bool start(IOService *provider);
+  void free(void);
+
+  // IOPCIBridge overrides.
   bool configure(IOService *provider);
   IODeviceMemory* ioDeviceMemory(void);
   UInt32 configRead32(IOPCIAddressSpace space, UInt8 offset);

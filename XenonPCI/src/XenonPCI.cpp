@@ -10,29 +10,17 @@
 OSDefineMetaClassAndStructors(XenonPCI, super);
 
 //
-// Overrides IOPCIBridge::init().
-//
-bool XenonPCI::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _configMap  = NULL;
-  _configMem  = NULL;
-  _lock       = NULL;
-
-  return super::init(dictionary);
-}
-
-//
-// Overrides IOPCIBridge::start().
+// Performs driver startup.
+// Overrides IOService::start().
 //
 bool XenonPCI::start(IOService *provider) {
+  XenonCheckDebugArgs();
+  XEDBGLOG("Starting PCI host bridge");
 
   _lock = IOSimpleLockAlloc();
   if (_lock == NULL) {
     return false;
   }
-
-  XEDBGLOG("PCI root host starting");
 
   _configMap = provider->mapDeviceMemoryWithIndex(0);
   if (_configMap == NULL) {
@@ -46,6 +34,21 @@ bool XenonPCI::start(IOService *provider) {
   registerService();
 
   return super::start(provider);
+}
+
+//
+// Releases driver resources.
+// Overrides IOService::free().
+//
+void XenonPCI::free(void) {
+  OSSafeReleaseNULL(_configMap);
+
+  if (_lock != NULL) {
+    IOSimpleLockFree(_lock);
+    _lock = NULL;
+  }
+
+  super::free();
 }
 
 //
@@ -67,6 +70,7 @@ IODeviceMemory* XenonPCI::ioDeviceMemory(void) {
 }
 
 //
+// Reads the specified 32-bit PCI configuration register.
 // Overrides IOPCIBridge::configRead32().
 //
 UInt32 XenonPCI::configRead32(IOPCIAddressSpace space, UInt8 offset) {
@@ -86,6 +90,7 @@ UInt32 XenonPCI::configRead32(IOPCIAddressSpace space, UInt8 offset) {
 }
 
 //
+// Writes the specified 32-bit PCI configuration register.
 // Overrides IOPCIBridge::configWrite32().
 //
 void XenonPCI::configWrite32(IOPCIAddressSpace space, UInt8 offset, UInt32 data) {
@@ -100,6 +105,7 @@ void XenonPCI::configWrite32(IOPCIAddressSpace space, UInt8 offset, UInt32 data)
 }
 
 //
+// Reads the specified 16-bit PCI configuration register.
 // Overrides IOPCIBridge::configRead16().
 //
 UInt16 XenonPCI::configRead16(IOPCIAddressSpace space, UInt8 offset) {
@@ -119,6 +125,7 @@ UInt16 XenonPCI::configRead16(IOPCIAddressSpace space, UInt8 offset) {
 }
 
 //
+// Writes the specified 16-bit PCI configuration register.
 // Overrides IOPCIBridge::configWrite16().
 //
 void XenonPCI::configWrite16(IOPCIAddressSpace space, UInt8 offset, UInt16 data) {
@@ -133,6 +140,7 @@ void XenonPCI::configWrite16(IOPCIAddressSpace space, UInt8 offset, UInt16 data)
 }
 
 //
+// Reads the specified 8-bit PCI configuration register.
 // Overrides IOPCIBridge::configRead8().
 //
 UInt8 XenonPCI::configRead8(IOPCIAddressSpace space, UInt8 offset) {
@@ -152,6 +160,7 @@ UInt8 XenonPCI::configRead8(IOPCIAddressSpace space, UInt8 offset) {
 }
 
 //
+// Writes the specified 8-bit PCI configuration register.
 // Overrides IOPCIBridge::configWrite8().
 //
 void XenonPCI::configWrite8(IOPCIAddressSpace space, UInt8 offset, UInt8 data) {
@@ -178,6 +187,7 @@ IOPCIAddressSpace XenonPCI::getBridgeSpace(void) {
 }
 
 //
+// Gets the first enumerable PCI bus number.
 // Overrides IOPCIBridge::firstBusNum().
 //
 UInt8 XenonPCI::firstBusNum(void) {
@@ -185,6 +195,7 @@ UInt8 XenonPCI::firstBusNum(void) {
 }
 
 //
+// Gets the last enumerable PCI bus number.
 // Overrides IOPCIBridge::lastBusNum().
 //
 UInt8 XenonPCI::lastBusNum(void) {
