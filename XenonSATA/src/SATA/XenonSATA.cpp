@@ -17,24 +17,25 @@
 OSDefineMetaClassAndStructors(XenonSATA, super);
 
 //
-// Overrides IOPCIATA::init().
-//
-bool XenonSATA::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _mmioMap = NULL;
-  _mmioMem = NULL;
-  _bmdmaMap = NULL;
-  _bmdmaMem = NULL;
-
-  return super::init(dictionary);
-}
-
-//
-// Overrides IOPCIATA::start().
+// Performs driver startup.
+// Overrides IOService::start().
 //
 bool XenonSATA::start(IOService *provider) {
   ATADeviceNub *newNub;
+
+  XenonCheckDebugArgs();
+  XEDBGLOG("Starting Xenon SATA controller");
+
+  _pciParent = OSDynamicCast(IOPCIDevice, provider);
+  if (_pciParent == NULL) {
+    XESYSLOG("Provider is not IOPCIDevice");
+    return false;
+  }
+  _pciParent->retain();
+
+  if (!_pciParent->open(this)) {
+    return false;
+  }
 
   // System Profiler works off the interconnect for ATA vs SATA.
   setProperty(kIOPropertyPhysicalInterconnectTypeKey, kIOPropertyPhysicalInterconnectTypeSerialATA);
@@ -44,10 +45,13 @@ bool XenonSATA::start(IOService *provider) {
     return false;
   }
 
-  if (!createInterrupt()) {
+  _intEventSource = IOInterruptEventSource::interruptEventSource(this,
+    OSMemberFunctionCast(IOInterruptEventSource::Action, this, &XenonSATA::handleInterrupt), getProvider(), 0);
+  if ((_intEventSource == NULL) || (getWorkLoop()->addEventSource(_intEventSource) != kIOReturnSuccess)) {
     XESYSLOG("Failed to create interrupt");
     return false;
   }
+  _intEventSource->enable();
 
   // Create nubs for attached devices.
   for (UInt32 i = 0; i < 2; i++) {
@@ -72,19 +76,21 @@ bool XenonSATA::start(IOService *provider) {
 }
 
 //
-// Overrides IOPCIATA::free().
+// Releases driver resources.
+// Overrides IOService::free().
 //
 void XenonSATA::free(void) {
   OSSafeReleaseNULL(_intEventSource);
   OSSafeReleaseNULL(_mmioMap);
   OSSafeReleaseNULL(_bmdmaMap);
+  OSSafeReleaseNULL(_pciParent);
 
   super::free();
 }
 
 //
-// Overrides IOPCIATA::getWorkLoop().
 // Creates the work loop if not already created.
+// Overrides IOService::getWorkLoop().
 //
 IOWorkLoop* XenonSATA::getWorkLoop(void) const {
   IOWorkLoop *workLoop = _workLoop;
@@ -96,8 +102,8 @@ IOWorkLoop* XenonSATA::getWorkLoop(void) const {
 }
 
 //
-// Overrides IOPCIATA::provideBusInfo().
 // Gets ATA controller info.
+// Overrides IOATAController::provideBusInfo().
 //
 IOReturn XenonSATA::provideBusInfo(IOATABusInfo *infoOut) {
   UInt8 units = 0;
@@ -125,7 +131,7 @@ IOReturn XenonSATA::provideBusInfo(IOATABusInfo *infoOut) {
 }
 
 //
-// Overrides IOPCIATA::selectConfig().
+// Overrides IOATAController::selectConfig().
 //
 IOReturn XenonSATA::selectConfig(IOATADevConfig *configRequest, UInt32 unitNumber) {
   XEDBGLOG("start");
@@ -135,7 +141,7 @@ IOReturn XenonSATA::selectConfig(IOATADevConfig *configRequest, UInt32 unitNumbe
 }
 
 //
-// Overrides IOPCIATA::getConfig().
+// Overrides IOATAController::getConfig().
 //
 IOReturn XenonSATA::getConfig(IOATADevConfig *configRequest, UInt32 unitNumber) {
   if ((configRequest == NULL) || (unitNumber > 1)) {
@@ -156,8 +162,8 @@ IOReturn XenonSATA::getConfig(IOATADevConfig *configRequest, UInt32 unitNumber) 
 }
 
 //
-// Overrides IOPCIATA::executeCommand().
 // Submits a command to the queue.
+// Overrides IOATAController::executeCommand().
 //
 IOReturn XenonSATA::executeCommand(IOATADevice *nub, IOATABusCommand *cmd) {
   UInt8 *packetData;
@@ -174,12 +180,12 @@ IOReturn XenonSATA::executeCommand(IOATADevice *nub, IOATABusCommand *cmd) {
 }
 
 //
-// Overrides IOPCIATA::configureTFPointers().
 // Configures/initializes taskfile registers. Called during super::start().
+// Overrides IOATAController::configureTFPointers().
 //
 bool XenonSATA::configureTFPointers(void) {
   // Map in command/control registers.
-  _mmioMap = getProvider()->mapDeviceMemoryWithIndex(0);
+  _mmioMap = _pciParent->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress0);
   if (_mmioMap == NULL) {
     XESYSLOG("Failed to map SATA command/control registers");
     return false;
@@ -201,7 +207,7 @@ bool XenonSATA::configureTFPointers(void) {
   _tfAltSDevCReg  = _mmioMem + kXenonSATARegAltStatus;
 
   // Map BMDMA registers.
-  _bmdmaMap = getProvider()->mapDeviceMemoryWithIndex(1);
+  _bmdmaMap = _pciParent->mapDeviceMemoryWithRegister(kIOPCIConfigBaseAddress1);
   if (_bmdmaMap == NULL) {
     XESYSLOG("Failed to map SATA BMDMA registers");
     return false;
@@ -224,18 +230,4 @@ bool XenonSATA::configureTFPointers(void) {
 //
 void XenonSATA::handleInterrupt(IOInterruptEventSource *intEventSource, int count) {
   handleDeviceInterrupt();
-}
-
-//
-// Creates and enables the interrupt event source.
-//
-bool XenonSATA::createInterrupt(void) {
-  _intEventSource = IOInterruptEventSource::interruptEventSource(this,
-    OSMemberFunctionCast(IOInterruptEventSource::Action, this, &XenonSATA::handleInterrupt), getProvider(), 0);
-  if ((_intEventSource == NULL) || (getWorkLoop()->addEventSource(_intEventSource) != kIOReturnSuccess)) {
-    return false;
-  }
-
-  _intEventSource->enable();
-  return true;
 }

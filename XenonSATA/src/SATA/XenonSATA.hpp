@@ -22,22 +22,23 @@ class XenonSATA : public IOPCIATA {
   typedef IOPCIATA super;
 
 public:
-  // Overrides.
-  bool init(OSDictionary *dictionary = 0);
+  // IOService overrides.
   bool start(IOService *provider);
   void free(void);
   IOWorkLoop* getWorkLoop(void) const;
 
+  // IOATAController overrides.
   IOReturn provideBusInfo(IOATABusInfo *infoOut);
   IOReturn selectConfig(IOATADevConfig *configRequest, UInt32 unitNumber);
   IOReturn getConfig(IOATADevConfig *configRequest, UInt32 unitNumber);
   IOReturn executeCommand(IOATADevice *nub, IOATABusCommand *cmd);
 
 protected:
-  // Overrides.
+  // IOATAController overrides.
   bool configureTFPointers(void);
 
 private:
+  IOPCIDevice             *_pciParent;
   IOMemoryMap             *_mmioMap;
   volatile UInt8          *_mmioMem;
   IOMemoryMap             *_bmdmaMap;
@@ -56,7 +57,6 @@ private:
   ATABusTimings busTimings[2];
 
   void handleInterrupt(IOInterruptEventSource *intEventSource, int count);
-  bool createInterrupt(void);
 };
 
 #endif
