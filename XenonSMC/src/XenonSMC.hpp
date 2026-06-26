@@ -25,9 +25,9 @@ class XenonSMC : public IOService {
   typedef IOService super;
 
 public:
-  // Overrides.
-  bool init(OSDictionary *dictionary = 0);
+  // IOService overrides.
   bool start(IOService *provider);
+  void free(void);
   IOReturn callPlatformFunction(const OSSymbol *functionName, bool waitForFunction,
                                 void *param1, void *param2, void *param3, void *param4);
 
@@ -36,7 +36,7 @@ private:
   IOMemoryMap                   *_mmioMap;
   volatile void                 *_mmioMem;
   IOSimpleLock                  *_lock;
-  IOFilterInterruptEventSource  *_interruptEventSource;
+  IOFilterInterruptEventSource  *_intEventSource;
   static XenonSMC               *_gXenonSMC;
 
   // Async states.

@@ -72,7 +72,7 @@ bool XenonSMC::filterInterrupt(IOFilterInterruptEventSource *intEventSource) {
 
   // Defer to secondary handler.
   if (needSecondary) {
-    _interruptEventSource->signalInterrupt();
+    _intEventSource->signalInterrupt();
   }
   return false;
 }

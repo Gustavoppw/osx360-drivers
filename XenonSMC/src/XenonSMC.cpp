@@ -11,23 +11,13 @@
 OSDefineMetaClassAndStructors(XenonSMC, super);
 
 //
-// Overrides IOService::init().
-//
-bool XenonSMC::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-  _debugEnabled = true;
-
-  _pciParent  = NULL;
-  _mmioMem    = NULL;
-  _mmioMap    = NULL;
-
-  return super::init(dictionary);
-}
-
-//
+// Performs driver startup.
 // Overrides IOService::start().
 //
 bool XenonSMC::start(IOService *provider) {
+  XenonCheckDebugArgs();
+  XEDBGLOG("Starting Xenon SMC");
+
   if (!super::start(provider)) {
     XESYSLOG("super::start() returned false");
     return false;
@@ -35,6 +25,7 @@ bool XenonSMC::start(IOService *provider) {
 
   _pciParent = OSDynamicCast(IOPCIDevice, provider);
   if (_pciParent == NULL) {
+    XESYSLOG("Provider is not IOPCIDevice");
     return false;
   }
   _pciParent->retain();
@@ -61,21 +52,24 @@ bool XenonSMC::start(IOService *provider) {
   IOSimpleLockInit(_lock);
 
   _rtcLock = IOLockAlloc();
+  if (_rtcLock == NULL) {
+    XESYSLOG("Failed to allocate RTC lock");
+    return false;
+  }
   IOLockInit(_rtcLock);
 
   //
   // Configure interrupt.
   //
-  _interruptEventSource = IOFilterInterruptEventSource::filterInterruptEventSource(this,
+  _intEventSource = IOFilterInterruptEventSource::filterInterruptEventSource(this,
     OSMemberFunctionCast(IOInterruptEventSource::Action, this, &XenonSMC::handleInterrupt),
     OSMemberFunctionCast(IOFilterInterruptEventSource::Filter, this, &XenonSMC::filterInterrupt),
     provider, 0);
-  if (_interruptEventSource == NULL) {
-    XESYSLOG("Failed to get interrupt");
+  if ((_intEventSource == NULL) || (getWorkLoop()->addEventSource(_intEventSource) != kIOReturnSuccess)) {
+    XESYSLOG("Failed to create interrupt");
     return false;
   }
-  getWorkLoop()->addEventSource(_interruptEventSource);
-  _interruptEventSource->enable();
+  _intEventSource->enable();
 
   //
   // Clear any pending interrupt and enable it.
@@ -97,6 +91,29 @@ bool XenonSMC::start(IOService *provider) {
 
   XEDBGLOG("Started Xenon SMC");
   return true;
+}
+
+//
+// Releases driver resources.
+// Overrides IOService::free().
+//
+void XenonSMC::free(void) {
+  _gXenonSMC = NULL;
+
+  OSSafeReleaseNULL(_intEventSource);
+  if (_rtcLock != NULL) {
+    IOLockFree(_rtcLock);
+    _rtcLock = NULL;
+  }
+  if (_lock != NULL) {
+    IOSimpleLockFree(_lock);
+    _lock = NULL;
+  }
+
+  OSSafeReleaseNULL(_mmioMap);
+  OSSafeReleaseNULL(_pciParent);
+
+  super::free();
 }
 
 //
