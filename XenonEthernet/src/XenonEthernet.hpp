@@ -20,6 +20,18 @@
 #include "XenonEthernet_Regs.hpp"
 
 //
+// Medium types.
+//
+enum {
+  kXenonMediumType10Half = 0,
+  kXenonMediumType10Full,
+  kXenonMediumType100Half,
+  kXenonMediumType100Full,
+  kXenonMediumTypeAuto,
+  kXenonMediumTypeCount
+};
+
+//
 // Descriptor transmit state.
 //
 typedef struct {
@@ -62,6 +74,7 @@ private:
   bool                _isEnabled;
 
   OSDictionary            *_mediumDict;
+  IONetworkMedium         *_mediumTypes[kXenonMediumTypeCount];
   IOEthernetAddress       _macAddress;
 
   IOWorkLoop              *_workLoop;
@@ -126,6 +139,7 @@ private:
   bool phyReset(void);
   bool phyAddMedium(IOMediumType type, UInt32 speed, UInt32 index);
   bool phyGetSupportedMediums(void);
+  IONetworkMedium* phyGetActiveMedium(void);
   void phyUpdateLinkStatus(void);
 
   // Transmit/receive functions.

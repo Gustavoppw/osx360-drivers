@@ -10,18 +10,6 @@
 #define MBPS(x)   (1000000 * (x))
 
 //
-// Medium indexes.
-//
-enum {
-  kMediumIndex10Half = 0,
-  kMediumIndex10Full,
-  kMediumIndex100Half,
-  kMediumIndex100Full,
-  kMediumIndexAuto,
-  kMediumIndexCount
-};
-
-//
 // Writes a PHY register.
 //
 bool XenonEthernet::phyWriteWithAddr(UInt32 addr, UInt32 offset, UInt16 data) {
@@ -136,6 +124,9 @@ bool XenonEthernet::phyAddMedium(IOMediumType type, UInt32 speed, UInt32 index) 
   medium = IONetworkMedium::medium(type, speed, 0, index);
   if (medium != NULL) {
     result = IONetworkMedium::addMedium(_mediumDict, medium);
+    if (result) {
+      _mediumTypes[index] = medium;
+    }
     medium->release();
   }
 
@@ -157,30 +148,61 @@ bool XenonEthernet::phyGetSupportedMediums(void) {
     return false;
   }
 
-  _mediumDict = OSDictionary::withCapacity(kMediumIndexCount);
+  _mediumDict = OSDictionary::withCapacity(kXenonMediumTypeCount);
   if (_mediumDict == NULL) {
     return false;
   }
 
   // Populate the mediums.
   if (phyStatus & kXenonEthernetPhyRegStatusSupp10Half) {
-    phyAddMedium(kIOMediumEthernet10BaseT | kIOMediumOptionHalfDuplex, MBPS(10), kMediumIndex10Half);
+    phyAddMedium(kIOMediumEthernet10BaseT | kIOMediumOptionHalfDuplex, MBPS(10), kXenonMediumType10Half);
   }
   if (phyStatus & kXenonEthernetPhyRegStatusSupp10Full) {
-    phyAddMedium(kIOMediumEthernet10BaseT | kIOMediumOptionFullDuplex, MBPS(10), kMediumIndex10Full);
+    phyAddMedium(kIOMediumEthernet10BaseT | kIOMediumOptionFullDuplex, MBPS(10), kXenonMediumType10Full);
   }
   if (phyStatus & kXenonEthernetPhyRegStatusSupp100Half) {
-    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kMediumIndex100Half);
+    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kXenonMediumType100Half);
   }
   if (phyStatus & kXenonEthernetPhyRegStatusSupp100Full) {
-    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kMediumIndex100Full);
+    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kXenonMediumType100Full);
   }
 
-  phyAddMedium(kIOMediumEthernetAuto, 0, kMediumIndexAuto);
+  phyAddMedium(kIOMediumEthernetAuto, 0, kXenonMediumTypeAuto);
   return publishMediumDictionary(_mediumDict);
 }
 
+//
+// Gets the active medium being used.
+//
+IONetworkMedium* XenonEthernet::phyGetActiveMedium(void) {
+  UInt32 mediumIndex;
+  UInt16 anar;
+  UInt16 anlp;
+
+  // Get the common autonegotiation bits between the controller and the partner.
+  if (!phyRead(kXenonEthernetPhyRegAnar, &anar) || !phyRead(kXenonEthernetPhyRegAnar, &anlp)) {
+    return NULL;
+  }
+  anar &= anlp;
+
+  if (anar & kXenonEthernetPhyRegAnar100Full) {
+    mediumIndex = kXenonMediumType100Full;
+  } else if (anar & kXenonEthernetPhyRegAnar100Half) {
+    mediumIndex = kXenonMediumType100Half;
+  } else if (anar & kXenonEthernetPhyRegAnar10Full) {
+    mediumIndex = kXenonMediumType10Full;
+  } else {
+    mediumIndex = kXenonMediumType10Half;
+  }
+
+  return _mediumTypes[mediumIndex];
+}
+
+//
+// Updates the current link status.
+//
 void XenonEthernet::phyUpdateLinkStatus(void) {
+  IONetworkMedium *activeMedium = NULL;
   UInt32 linkStatus = kIONetworkLinkValid;
   UInt16 phyStatus;
 
@@ -191,11 +213,12 @@ void XenonEthernet::phyUpdateLinkStatus(void) {
 
   if (phyStatus & kXenonEthernetPhyRegStatusLink) {
     linkStatus |= kIONetworkLinkActive;
-
-    XEDBGLOG("Link up");
+    activeMedium = phyGetActiveMedium();
+    XEDBGLOG("Link up, medium %u",
+      (activeMedium != NULL) ? activeMedium->getIndex() : kXenonMediumTypeCount);
   } else {
     XEDBGLOG("Link down");
   }
 
-  setLinkStatus(linkStatus);
+  setLinkStatus(linkStatus, activeMedium);
 }

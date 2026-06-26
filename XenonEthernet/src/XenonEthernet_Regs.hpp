@@ -144,8 +144,21 @@
 // PHY IDs
 #define kXenonEthernetPhyRegId1                     0x02
 #define kXenonEthernetPhyRegId2                     0x03
-#define kXenonEthernetPhyRegAdvertise               0x04
-#define kXenonEthernetPhyRegLpa                     0x05
+// Autonegotiation advertisements.
+#define kXenonEthernetPhyRegAnar                    0x04
+#define kXenonEthernetPhyRegAnar10Half              BIT5
+#define kXenonEthernetPhyRegAnar10Full              BIT6
+#define kXenonEthernetPhyRegAnar100Half             BIT7
+#define kXenonEthernetPhyRegAnar100Full             BIT8
+#define kXenonEthernetPhyRegAnar100Base4            BIT9
+// Autonegotiation link partner abilities.
+#define kXenonEthernetPhyRegAnlp                     0x05
+#define kXenonEthernetPhyRegAnlp10Half              BIT5
+#define kXenonEthernetPhyRegAnlp10Full              BIT6
+#define kXenonEthernetPhyRegAnlp100Half             BIT7
+#define kXenonEthernetPhyRegAnlp100Full             BIT8
+#define kXenonEthernetPhyRegAnlp100Base4            BIT9
+// Expansion.
 #define kXenonEthernetPhyRegExpansion               0x06
 
 
