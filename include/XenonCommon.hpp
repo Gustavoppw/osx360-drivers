@@ -11,6 +11,7 @@
 #include <IOKit/IOLib.h>
 
 #define ARRSIZE(x)    ((sizeof (x) / sizeof ((x)[0])))
+#define ALIGN(v, a)   (((v) + (a) - 1) & ~((a) - 1))
 
 #define kHz   1000
 #define MHz   (kHz * 1000)
@@ -185,7 +186,6 @@ inline void logPrint(const char *className, const char *locationName, const char
 // Common logging macros to inject function name.
 //
 #define XEDBGLOG(str, args...)     XEDBGLOG_PRINT(__FUNCTION__, str, ##args)
-#define XEDATADBGLOG(str, args...) XEDATADBGLOG_PRINT(__FUNCTION__, str, ##args)
 #define XESYSLOG(str, args...)     XESYSLOG_PRINT(__FUNCTION__, str, ##args)
 
 #else
