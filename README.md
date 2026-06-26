@@ -17,3 +17,4 @@ Xbox 360 support kernel extensions for Mac OS X as part of [osx360](https://gith
 - [Lilu](https://github.com/acidanthera/Lilu) for kernel patching and function hooking basis
 - [Free60](https://free60.org) for various documents/info
 - [libxenon](https://github.com/Free60Project/libxenon) for graphics implementation and other hardware info
+- [Xenon Emulator](https://github.com/xenon-emu/xenon) for hardware workings
