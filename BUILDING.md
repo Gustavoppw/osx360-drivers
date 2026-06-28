@@ -2,12 +2,12 @@
 
 ## Requirements
 * Linux with [Darling](https://github.com/darlinghq/darling) installed
-  * [install-darling.sh](./tools/install-darling.sh) will install Darling on Ubuntu 24.04 LTS, currently used by GitHub Actions
+  * [install-darling.sh](tools/install-darling.sh) will install Darling on Ubuntu 24.04 LTS, currently used by GitHub Actions
   * Newer Darling versions and other Linux distributions should work but have not been tested.
 * [Xcode Tools 3.2.6](https://developer.apple.com/services-account/download?path=/Developer_Tools/xcode_3.2.6_and_ios_sdk_4.3__final/xcode_3.2.6_and_ios_sdk_4.3.dmg) (requires an Apple login)
 
 ## Xcode tools installation
-  From the Xcode Tools DMG, you'll need to extract two packages to the [tools](./tools) directory:
+  From the Xcode Tools DMG, you'll need to extract two packages to the [tools](tools) directory:
     * DeveloperToolsCLI.pkg
     * gcc4.2.pkg
 
