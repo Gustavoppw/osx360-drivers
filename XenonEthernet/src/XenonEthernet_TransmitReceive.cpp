@@ -263,7 +263,9 @@ void XenonEthernet::handleRxInterrupt(void) {
       packetReceived = NULL;
       XESYSLOG("Failed to set the packet?");
     }
-
+    if (_rxIndex == (kXenonEthernetRxDescCount - 1)) {
+      desc->length |= OSSwapHostToLittleInt32(kXenonEthernetDescLengthEnd);
+    }
     desc->flags = OSSwapHostToLittleInt32(kXenonEthernetTxFlagsInterrupt | kXenonEthernetTxFlagsOwner);
 
     _ethInterface->inputPacket(packetReceived, packetLength, IONetworkInterface::kInputOptionQueuePacket);

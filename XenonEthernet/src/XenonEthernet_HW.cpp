@@ -12,8 +12,6 @@
 //
 void XenonEthernet::handleInterrupt(IOInterruptEventSource *intEventSource, int count) {
   UInt32 intStatus = readReg32(kXenonEthernetRegIntStatus);
-
-  XEDBGLOG("Interrupt 0x%X!", intStatus);
   writeReg32(kXenonEthernetRegIntStatus, intStatus);
 
   if (intStatus & kXenonEthernetIntLink) {
@@ -27,7 +25,6 @@ void XenonEthernet::handleInterrupt(IOInterruptEventSource *intEventSource, int 
   if (intStatus & kXenonEthernetIntTxDone) {
     handleTxInterrupt();
   }
-
 }
 
 //
@@ -95,7 +92,7 @@ bool XenonEthernet::initHardware(void) {
 
 
   writeReg16(kXenonEthernetRegRxMpsControl, 0x05F2);
-  writeReg16(kXenonEthernetRegRxMacControl, 0x0E38 | kXenonEthernetRegRxMacControlAcceptAllPhys);
+  writeReg16(kXenonEthernetRegRxMacControl, 0x0E38);
 
 
   writeReg32(kXenonEthernetRegStationControl, 0x04001001);
