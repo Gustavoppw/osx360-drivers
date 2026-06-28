@@ -19,7 +19,7 @@ all:
 
 package:
 	@echo "OSX target version: $(OSX_VERSION)"
-	python3 ./make-mkext.py $(BUILD_PKG)/Kexts $(BUILD_PKG)/$(MKEXT_NAME)
+	python3 ./tools/make-mkext.py $(BUILD_PKG)/Kexts $(BUILD_PKG)/$(MKEXT_NAME)
 	cd $(BUILD_PKG); zip -qry -FS ../$(ARCHIVE_ZIP) *
 
 clean:
