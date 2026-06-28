@@ -123,6 +123,8 @@ IOReturn XenonSMC::callPlatformFunction(const OSSymbol *functionName, bool waitF
                                         void *param1, void *param2, void *param3, void *param4) {
   if (functionName->isEqualTo(kXenonFuncSMCEject)) {
     return ejectTray();
+  } else if (functionName->isEqualTo(kXenonFuncSMCMuteAudio)) {
+    return muteAudio((bool)param1);
   }
 
   return super::callPlatformFunction(functionName, waitForFunction, param1, param2, param3, param4);

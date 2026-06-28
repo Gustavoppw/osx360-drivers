@@ -61,6 +61,7 @@
 #define kXenonSMCCommandSetRTC          0x85
 #define kXenonSMCCommandOpenCloseTray   0x8B
 #define kXenonSMCCommandSetPowerLED     0x8C
+#define kXenonSMCCommandMuteAudio       0x8D
 #define kXenonSMCCommandSetRingLED      0x99
 
 // Temperature status.

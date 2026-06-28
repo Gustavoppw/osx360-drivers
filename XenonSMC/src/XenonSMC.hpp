@@ -79,6 +79,7 @@ private:
   IOReturn rebootPowerOff(bool reboot);
   IOReturn cancelPowerOff(void);
   IOReturn ejectTray(void);
+  IOReturn muteAudio(bool mute);
 
   // Platform functions.
   static int peHaltRestart(unsigned int type);

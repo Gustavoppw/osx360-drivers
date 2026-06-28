@@ -68,7 +68,8 @@
 //
 // SMC functions.
 //
-#define kXenonFuncSMCEject              "SMCEjectTray"
+#define kXenonFuncSMCEject              "XenonSMC_EjectTray"
+#define kXenonFuncSMCMuteAudio          "XenonSMC_MuteAudio"
 
 //
 // Major kernel version exported from XNU.

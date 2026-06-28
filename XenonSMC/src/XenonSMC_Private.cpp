@@ -278,3 +278,16 @@ IOReturn XenonSMC::ejectTray(void) {
 
   return writeMessage(&message);
 }
+
+//
+// Mutes or unmutes the console audio.
+//
+IOReturn XenonSMC::muteAudio(bool mute) {
+  XenonSMCMessage message;
+
+  bzero(&message, sizeof(message));
+  message.command = kXenonSMCCommandMuteAudio;
+  message.data[0] = mute ? 0 : 1;
+
+  return writeMessage(&message);
+}
