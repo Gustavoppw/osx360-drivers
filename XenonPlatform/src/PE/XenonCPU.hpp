@@ -21,7 +21,6 @@ class XenonCPU : public IOCPU {
 
 public:
   // Overrides.
-  bool init(OSDictionary *dictionary = 0);
   bool start(IOService *provider);
   void initCPU(bool boot);
   void quiesceCPU(void);

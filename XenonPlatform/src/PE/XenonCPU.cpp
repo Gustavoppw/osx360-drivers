@@ -14,14 +14,6 @@ OSDefineMetaClassAndStructors(XenonCPU, super);
 static IOCPUInterruptController *gCPUIC;
 
 //
-// Overrides IOCPU::init()
-//
-bool XenonCPU::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-  return super::init(dictionary);
-}
-
-//
 // Overrides IOCPU::start()
 //
 bool XenonCPU::start(IOService *provider) {
@@ -31,9 +23,8 @@ bool XenonCPU::start(IOService *provider) {
   UInt32              physCPU;
   ml_processor_info_t processor_info;
 
-  //
-  // Ensure platform expert is XenonPE.
-  //
+  XenonCheckDebugArgs();
+
   if (OSDynamicCast(XenonPE, getPlatform()) == NULL) {
     XESYSLOG("Current platform is not Xenon");
     return false;
@@ -44,9 +35,7 @@ bool XenonCPU::start(IOService *provider) {
     return false;
   }
 
-  //
   // Get total CPU count.
-  //
   _numCPUs = 0;
   cpusRegEntry = fromPath("/cpus", gIODTPlane);
   if (cpusRegEntry == NULL) {
@@ -55,9 +44,7 @@ bool XenonCPU::start(IOService *provider) {
   }
   _numCPUs = 1; // TODO: Only handle one CPU.
 
-  //
   // Set physical CPU number from the "reg" property.
-  //
   tmpData = OSDynamicCast(OSData, provider->getProperty("reg"));
   if (tmpData == NULL) {
     XESYSLOG("Failed to read reg property");
@@ -66,9 +53,7 @@ bool XenonCPU::start(IOService *provider) {
   physCPU = *((UInt32 *)tmpData->getBytesNoCopy());
   setCPUNumber(physCPU);
 
-  //
   // Check if boot CPU.
-  //
   _isBootCPU = true;
   tmpData = OSDynamicCast(OSData, provider->getProperty("state"));
   if (tmpData == 0) {
@@ -80,9 +65,7 @@ bool XenonCPU::start(IOService *provider) {
   }
   XEDBGLOG("Physical CPU number: %u, boot CPU: %u", physCPU, _isBootCPU);
 
-  //
   // Create the CPU interrupt controller.
-  //
   if (_isBootCPU) {
     gCPUIC = new IOCPUInterruptController;
     if (gCPUIC == NULL) {
@@ -97,14 +80,10 @@ bool XenonCPU::start(IOService *provider) {
     gCPUIC->registerCPUInterruptController();
   }
 
-  //
   // CPU starts out uninitialized.
-  //
   setCPUState(kIOCPUStateUninitalized);
 
-  //
   // Register the CPU with XNU and start it.
-  //
   XEDBGLOG("Registering CPU %u with XNU", physCPU);
   if (physCPU < _numCPUs) {
     processor_info.cpu_id           = (cpu_id_t)this;
@@ -135,9 +114,7 @@ void XenonCPU::initCPU(bool boot) {
   if (boot) {
     gCPUIC->enableCPUInterrupt(this);
 
-    //
     // Register and enable IPIs.
-    //
 	  cpuNub->registerInterrupt(0, this, OSMemberFunctionCast(IOInterruptAction, this, &XenonCPU::ipiHandler), 0);
     cpuNub->enableInterrupt(0);
   }
