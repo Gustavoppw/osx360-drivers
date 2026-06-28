@@ -164,7 +164,7 @@ bool XenonEthernet::phyGetSupportedMediums(void) {
     phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kXenonMediumType100Half);
   }
   if (phyStatus & kXenonEthernetPhyRegStatusSupp100Full) {
-    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionHalfDuplex, MBPS(100), kXenonMediumType100Full);
+    phyAddMedium(kIOMediumEthernet100BaseTX | kIOMediumOptionFullDuplex, MBPS(100), kXenonMediumType100Full);
   }
 
   phyAddMedium(kIOMediumEthernetAuto, 0, kXenonMediumTypeAuto);
@@ -183,6 +183,8 @@ IONetworkMedium* XenonEthernet::phyGetActiveMedium(void) {
   if (!phyRead(kXenonEthernetPhyRegAnar, &anar) || !phyRead(kXenonEthernetPhyRegAnar, &anlp)) {
     return NULL;
   }
+
+  XEDBGLOG("ANAR 0x%X ANLP 0x%X", anar, anlp);
   anar &= anlp;
 
   if (anar & kXenonEthernetPhyRegAnar100Full) {
