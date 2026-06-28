@@ -25,7 +25,7 @@ AltiVec is not supported on Xenon in favor of VMX128 which drops some AltiVec in
   * A USB drive can also work, but is not documented currently and will require some additional work to start from OpenBIOS.
 
 #### USB setup
-Configure the USB for BadUpdate / ABadAvatar if needed. Place openbios.elf and Xbox360.mkext from this repo's releases onto the root of the drive. Configure kboot.conf for XeLL as desired, an example configuration can be found here.
+Configure the USB for BadUpdate / ABadAvatar if needed. Place openbios.elf and Xbox360.mkext from this repo's releases onto the root of the drive. Configure kboot.conf for XeLL as desired, an example configuration can be found [here](tools/kboot.conf).
 
 #### Boot and installation
 Start XeLL and launch OpenBIOS. OpenBIOS should drop into the shell.
