@@ -54,7 +54,7 @@ private:
   IOBufferMemoryDescriptor    *_descBufferDesc;
   IOPhysicalAddress           _descBufferPhysAddr;
 
-  UInt8                        *_sampleBuffer;
+  void                        *_sampleBuffer;
   IOBufferMemoryDescriptor    *_sampleBufferDesc;
   IOPhysicalAddress           _sampleBufferPhysAddr;
 

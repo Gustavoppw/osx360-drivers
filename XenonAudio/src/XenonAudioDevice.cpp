@@ -141,9 +141,9 @@ IOReturn XenonAudioDevice::stopAudio(XenonAudioEngine *audioEngine) {
   }
   XEDBGLOG("Stop register 0x%X", reg);
 
-  writeReg32(reg, readReg32(reg) & ~(kXenonAudioRegControlRun));
   _timerEventSource->disable();
   _timerEventSource->cancelTimeout();
+  writeReg32(reg, readReg32(reg) & ~(kXenonAudioRegControlRun));
 
   return kIOReturnSuccess;
 }
@@ -184,10 +184,12 @@ void XenonAudioDevice::handleTimer(IOTimerEventSource *sender) {
   }
   _lastReadPtr = readPtr;
 
-  // Keep the buffer moving.
-  readPtr += 10;
-  readPtr &= kXenonAudioDescMask;
-  writeReg32(kXenonAudioRegState, readPtr << kXenonAudioRegStateWritePtrShift);
+  if ((readPtr % (kXenonAudioDescCount / 8)) == 0) {
+    // Keep the buffer moving.
+    readPtr += (kXenonAudioDescCount / 8);
+    readPtr &= kXenonAudioDescMask;
+    writeReg32(kXenonAudioRegState, readPtr << kXenonAudioRegStateWritePtrShift);
+  }
 
   _timerEventSource->setTimeoutUS(kXenonAudioTimerUpdateUS);
 }
@@ -240,7 +242,7 @@ bool XenonAudioDevice::allocateSampleDescriptors(void) {
   // Map sample buffer as I/O, audio hardware doesn't seem to be cache coherent.
   // TODO: Is there a better way to do this? Attempting to use IOSetProcessorCache like others doesn't seem to work.
   _sampleBufferPhysAddr = _sampleBufferDesc->getPhysicalSegment(0, &length);
-  _sampleBuffer = (UInt8*) ml_io_map(_sampleBufferPhysAddr, kXenonSampleBufferLength);
+  _sampleBuffer = (void*) ml_io_map(_sampleBufferPhysAddr, kXenonSampleBufferLength);
 
   XEDBGLOG("Allocated sample buffer at 0x%X length 0x%X to %p", _sampleBufferPhysAddr,
     _sampleBufferDesc->getLength(), _sampleBuffer);
@@ -263,8 +265,8 @@ void XenonAudioDevice::setupSampleDescriptors(void) {
   writeReg32(kXenonAudioRegControl, 0);
   writeReg32(kXenonAudioRegControl, 0x2000000);
   writeReg32(kXenonAudioRegDescAddr, _descBufferPhysAddr);
-  //writeReg32(kXenonAudioRegControl, 0x1c08001c);
-  writeReg32(kXenonAudioRegControl, 0x1c00001c);
+  writeReg32(kXenonAudioRegControl, 0x1c08001c);
+ // writeReg32(kXenonAudioRegControl, 0x1c00001c);
   writeReg32(kXenonAudioRegFormat, 0x1c);
 }
 

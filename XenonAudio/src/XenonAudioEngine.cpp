@@ -68,7 +68,7 @@ bool XenonAudioEngine::initHardware(IOService *provider) {
   setSampleRate(&sampleRate);
   setNumSampleFramesPerBuffer(_sampleBufferLength / kXenonAudioBytesPerFrame);
   setSampleLatency(32);
-  setSampleOffset(32);
+  setSampleOffset(64);
 
   // Create the output stream. There is no input hardware.
   audioStream = new IOAudioStream;
@@ -84,7 +84,6 @@ bool XenonAudioEngine::initHardware(IOService *provider) {
   audioStream->addAvailableFormat(&format, &sampleRate, &sampleRate);
   audioStream->setFormat(&format);
 
-
   // Add the output stream.
   addAudioStream(audioStream);
   audioStream->release();
@@ -97,7 +96,6 @@ bool XenonAudioEngine::initHardware(IOService *provider) {
 // Overrides IOAudioEngine::getCurrentSampleFrame().
 //
 UInt32 XenonAudioEngine::getCurrentSampleFrame() {
- // return (_sampleBufferLength - _audioDevice->getAudioBytesLeft(this)) / kXenonAudioBytesPerFrame;
   return _audioDevice->getAudioPosition(this) / kXenonAudioBytesPerFrame;
 }
 
