@@ -6,6 +6,9 @@
 Xbox 360 support kernel extensions for Mac OS X as part of [osx360](https://github.com/osx360).
 
 ### Extensions
+* XenonAudo: Audio support
+* XenonCoreGraphics: Core graphics support
+* XenonEthernet: Ethernet support
 * XenonPCI: PCI host bridge support
 * XenonPlatform: Platform expert and interrupt controller support
 * XenonSATA: SATA controller and DVD drive support
@@ -17,4 +20,5 @@ Xbox 360 support kernel extensions for Mac OS X as part of [osx360](https://gith
 - [Lilu](https://github.com/acidanthera/Lilu) for kernel patching and function hooking basis
 - [Free60](https://free60.org) for various documents/info
 - [libxenon](https://github.com/Free60Project/libxenon) for graphics implementation and other hardware info
+- [https://github.com/freedreno-zz/freedreno](freedreno) for graphics implementation
 - [Xenon Emulator](https://github.com/xenon-emu/xenon) for hardware workings
