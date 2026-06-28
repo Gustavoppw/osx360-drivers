@@ -18,7 +18,7 @@
 
 typedef kern_return_t (*xnu_kmem_alloc_pageable_func)(vm_map_t map, vm_offset_t *addrp, vm_size_t size);
 typedef addr64_t (*xnu_mapping_make_func)(void *pmap, addr64_t va, ppnum_t pa, unsigned int flags, unsigned int size, vm_prot_t prot);
-typedef void (*xnu_pmap_sync_page_data_phys)(ppnum_t pa);
+typedef void (*xnu_pmap_sync_phys)(ppnum_t pa);
 
 //
 // Represents the Xbox 360 platform expert.
@@ -29,8 +29,10 @@ class XenonPE : public IODTPlatformExpert {
   typedef IODTPlatformExpert super;
 
 public:
-  // Overrides.
+  // IOService overrides.
   bool start(IOService *provider);
+
+  // IOPlatformExpert overrides.
   IOReturn callPlatformFunction(const OSSymbol *functionName, bool waitForFunction,
                                 void *param1, void *param2, void *param3, void *param4);
   const char *deleteList(void);
@@ -78,7 +80,7 @@ private:
 
   xnu_kmem_alloc_pageable_func  _kmemAllocPageableFunc;
   xnu_mapping_make_func         _mappingMakeFunc;
-  xnu_pmap_sync_page_data_phys  _pmapSyncPageDataPhysFunc;
+  xnu_pmap_sync_phys            _pmapSyncPhysFunc;
 
   // Function hooks.
   static XenonPE    *_callbackPE;
@@ -97,7 +99,7 @@ private:
 
   // Patching/symbol lookups.
   bool findKernelMachHeader(void);
-  IOReturn initPatcher(void);
+  bool initPatcher(void);
 
   // Function hooks.
   static void wrapDebugger(const char *str);

@@ -164,7 +164,7 @@ void XenonPE::wrapPmapEnter(void* pmap, vm_map_offset_t va, ppnum_t pa, vm_prot_
     }
 
     if (changed) {
-      _callbackPE->_pmapSyncPageDataPhysFunc(pa);
+      _callbackPE->_pmapSyncPhysFunc(pa);
     }
   }
 }
@@ -246,7 +246,7 @@ IOReturn XenonPE::routeFunction(UInt32 from, UInt32 to, UInt32 *trampoline) {
   return kIOReturnSuccess;
 }
 
-IOReturn XenonPE::initPatcher(void) {
+bool XenonPE::initPatcher(void) {
   kern_return_t result;
 
   _callbackPE = this;
@@ -255,15 +255,20 @@ IOReturn XenonPE::initPatcher(void) {
   // Get the kernel header and resolve required non-exported functions.
   //
   if (!findKernelMachHeader()) {
-    return kIOReturnIOError;
+    return false;
   }
 
-  _kmemAllocPageableFunc = (xnu_kmem_alloc_pageable_func)resolveKernelSymbol("_kmem_alloc_pageable");
-  _mappingMakeFunc = (xnu_mapping_make_func)resolveKernelSymbol("_mapping_make");
-  _pmapSyncPageDataPhysFunc = (xnu_pmap_sync_page_data_phys)resolveKernelSymbol("_pmap_sync_page_data_phys");
-  if ((_kmemAllocPageableFunc == NULL) || (_mappingMakeFunc == NULL) || (_pmapSyncPageDataPhysFunc == NULL)) {
+  _kmemAllocPageableFunc = (xnu_kmem_alloc_pageable_func) resolveKernelSymbol("_kmem_alloc_pageable");
+  _mappingMakeFunc = (xnu_mapping_make_func) resolveKernelSymbol("_mapping_make");
+  if (getKernelVersion() >= kKernelVersionTiger) {
+    _pmapSyncPhysFunc = (xnu_pmap_sync_phys) resolveKernelSymbol("_pmap_sync_page_data_phys");
+  } else {
+    _pmapSyncPhysFunc = (xnu_pmap_sync_phys) resolveKernelSymbol("_pmap_sync_caches_phys");
+  }
+
+  if ((_kmemAllocPageableFunc == NULL) || (_mappingMakeFunc == NULL) || (_pmapSyncPhysFunc == NULL)) {
     XESYSLOG("Failed to resolve one or more non-exported functions");
-    return kIOReturnIOError;
+    return false;
   }
 
   result = vm_protect(kernel_map, (vm_address_t) _tmpExecMemory, sizeof(_tmpExecMemory), TRUE, VM_PROT_ALL);
@@ -274,7 +279,7 @@ IOReturn XenonPE::initPatcher(void) {
   routeFunction(resolveKernelSymbol("_Debugger"), (UInt32)&XenonPE::wrapDebugger, &orgDebugger);
   routeFunction(resolveKernelSymbol("_pmap_enter"), (UInt32)&XenonPE::wrapPmapEnter, &orgPmapEnter);
 
-  return kIOReturnSuccess;
+  return true;
 }
 
 //

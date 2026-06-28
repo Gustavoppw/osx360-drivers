@@ -18,10 +18,10 @@ OSDefineMetaClassAndStructors(XenonPE, super);
 #define kChipSetTypeMol		170
 
 //
-// Overrides IODTPlatformExpert::start().
+// Performs the platform expert startup.
+// Overrides IOService::start().
 //
 bool XenonPE::start(IOService *provider) {
-  IOReturn        status;
   IOService       *service;
   IOPMrootDomain  *pmRootDomain;
 
@@ -33,8 +33,9 @@ bool XenonPE::start(IOService *provider) {
   }
   startFramebuffer();
 
-  status = initPatcher();
-  if (status != kIOReturnSuccess) {
+  if (!initPatcher()) {
+    XESYSLOG("Failed to initialize patcher");
+    refreshFramebuffer();
     return false;
   }
 
@@ -48,6 +49,7 @@ bool XenonPE::start(IOService *provider) {
 
   if (!super::start(provider)) {
     XESYSLOG("super::start() returned false");
+    refreshFramebuffer();
     return false;
   }
 
