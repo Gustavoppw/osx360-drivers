@@ -23,9 +23,10 @@ class XenonInterruptController : public IOInterruptController {
   typedef IOInterruptController super;
 
 public:
-  // Overrides.
-  bool init(OSDictionary *dictionary = 0);
+  // IOService overrides.
   bool start(IOService *provider);
+
+  // IOInterruptController overrides.
   IOInterruptAction getInterruptHandlerAddress(void);
   IOReturn handleInterrupt(void *refCon, IOService *nub, int source);
   int getVectorType(IOInterruptVectorNumber vectorNumber, IOInterruptVector *vector);
@@ -39,6 +40,7 @@ private:
   volatile void       *_bridgeMmioMem;
   volatile void       *_biuMmioMem;
 
+  // Register read/write.
   inline UInt64 readICReg64(UInt32 cpu, UInt32 offset) {
     return ReadFullBigInt64(_mmioMem, (cpu * kXenonICCoreRegOffset) + offset);
   }

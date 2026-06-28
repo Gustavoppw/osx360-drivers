@@ -21,19 +21,7 @@ OSDefineMetaClassAndStructors(XenonInterruptController, super);
 static UInt8 sXenonCPUInterruptMap[kXenonICVectorCount];
 
 //
-// Overrides IOInterruptController::init().
-//
-bool XenonInterruptController::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _debugEnabled = true;
-
-  _mmioMem   = NULL;
-
-  return super::init(dictionary);
-}
-
-//
+// Performs driver startup.
 // Overrides IOInterruptController::start().
 //
 bool XenonInterruptController::start(IOService *provider) {
@@ -42,18 +30,16 @@ bool XenonInterruptController::start(IOService *provider) {
   bool            vectorLockResult;
   IOReturn        status;
 
-  //
+  XenonCheckDebugArgs();
+
   // Get the Xenon platform expert
-  //
   xenonPE = OSDynamicCast(XenonPE, getPlatform());
   if (xenonPE == NULL) {
     XESYSLOG("Current platform is not Xenon");
     return false;
   }
 
-  //
   // Fill out interrupt map table.
-  //
   for (UInt32 i = 0; i < kXenonICVectorCount; i++) {
     sXenonCPUInterruptMap[i] = kXenonVectorInvalid;
   }
@@ -75,9 +61,6 @@ bool XenonInterruptController::start(IOService *provider) {
     return false;
   }
 
-  //
-  // Get the interrupt controller name.
-  //
   interruptControllerName = (OSSymbol *)IODTInterruptControllerName(provider);
   if (interruptControllerName == NULL) {
     XESYSLOG("Failed to get interrupt controller name");
@@ -97,9 +80,7 @@ bool XenonInterruptController::start(IOService *provider) {
 
   XEDBGLOG("Mapped registers to %p", _mmioMem);
 
-  //
   // Map PCI bridge memory for interrupt routing.
-  //
   _bridgeMmioMap = getProvider()->mapDeviceMemoryWithIndex(0);
   if (_bridgeMmioMap == NULL) {
     XESYSLOG("Failed to map bridge memory");
@@ -109,9 +90,7 @@ bool XenonInterruptController::start(IOService *provider) {
   XEDBGLOG("Mapped bridge memory at 0x%X length 0x%X to %p", _bridgeMmioMap->getPhysicalAddress(),
     _bridgeMmioMap->getLength(), _bridgeMmioMem);
 
-  //
   // Map BIU memory.
-  //
   _biuMmioMap = getProvider()->mapDeviceMemoryWithIndex(1);
   if (_biuMmioMap == NULL) {
     XESYSLOG("Failed to map BIU memory");
@@ -130,17 +109,13 @@ bool XenonInterruptController::start(IOService *provider) {
   writeBridgeReg32(0xC, 0);
   writeBridgeReg32(0, 0x3);
 
-  //
   // Mask all PCI bridge interrupts if not already.
-  //
   for (UInt32 i = 0; i < kXenonPCIBridgeVectorCount; i++) {
     writeBridgeReg32(kXenonPCIBridgeRegIntBase + (i * sizeof(UInt32)), 0);
   }
   eieio();
 
-  //
   // Configure interrupt controller.
-  //
   writeICReg64(0, kXenonICRegSpuriousVector, 0x7C);
   writeICReg64(0, kXenonICRegPriority, 0);
   writeICReg64(0, kXenonICRegLogicalID, 1);
@@ -152,9 +127,6 @@ bool XenonInterruptController::start(IOService *provider) {
  // writeICReg64(0, kXenonICRegEndOfInterruptAutoUpd, 0);
   eieio();
 
-  //
-  // Allocate vectors.
-  //
   vectors = (IOInterruptVector *)IOMalloc(kXenonICVectorCount * sizeof (IOInterruptVector));
   if (vectors == NULL) {
     XESYSLOG("Failed to allocate vectors");
@@ -162,9 +134,6 @@ bool XenonInterruptController::start(IOService *provider) {
   }
   bzero(vectors, kXenonICVectorCount * sizeof (IOInterruptVector));
 
-  //
-  // Allocate vector locks.
-  //
   vectorLockResult = true;
   for (int i = 0; i < kXenonICVectorCount; i++) {
     vectors[i].interruptLock = IOLockAlloc();
@@ -180,9 +149,7 @@ bool XenonInterruptController::start(IOService *provider) {
 
   registerService();
 
-  //
   // Register this as the platform interrupt controller.
-  //
   getPlatform()->setCPUInterruptProperties(provider);
   provider->registerInterrupt(0, this, getInterruptHandlerAddress(), 0);
   provider->enableInterrupt(0);
@@ -194,18 +161,16 @@ bool XenonInterruptController::start(IOService *provider) {
 }
 
 //
-// Overrides IOInterruptController::getInterruptHandlerAddress().
-//
 // Gets the address of the primary interrupt handler for this controller.
+// Overrides IOInterruptController::getInterruptHandlerAddress().
 //
 IOInterruptAction XenonInterruptController::getInterruptHandlerAddress(void) {
   return OSMemberFunctionCast(IOInterruptAction, this, &XenonInterruptController::handleInterrupt);
 }
 
 //
-// Overrides IOInterruptController::handleInterrupt().
-//
 // Handles all incoming interrupts for this controller and forwards to the appropriate vectors.
+// Overrides IOInterruptController::handleInterrupt().
 //
 IOReturn XenonInterruptController::handleInterrupt(void *refCon, IOService *nub, int source) {
   IOInterruptVector *vector;
@@ -251,9 +216,7 @@ IOReturn XenonInterruptController::handleInterrupt(void *refCon, IOService *nub,
   if (!vector->interruptDisabledSoft) {
     isync();
 
-    //
     // Call the handler if it exists.
-    //
     if (vector->interruptRegistered) {
       vector->handler(vector->target, vector->refCon, vector->nub, vector->source);
     }
@@ -265,9 +228,7 @@ IOReturn XenonInterruptController::handleInterrupt(void *refCon, IOService *nub,
 
   vector->interruptActive = 0;
 
-  //
   // EOI it.
-  //
   writeICReg64(0, kXenonICRegEndOfInterrupt, 0);
   writeICReg64(0, kXenonICRegEndOfInterruptAutoUpd, 0);
   readICReg64(0, kXenonICRegPriority);
@@ -275,18 +236,16 @@ IOReturn XenonInterruptController::handleInterrupt(void *refCon, IOService *nub,
 }
 
 //
-// Overrides IOInterruptController::getVectorType().
-//
 // Gets the type of vector.
+// Overrides IOInterruptController::getVectorType().
 //
 int XenonInterruptController::getVectorType(IOInterruptVectorNumber vectorNumber, IOInterruptVector *vector) {
   return kIOInterruptTypeLevel;
 }
 
 //
-// Overrides IOInterruptController::disableVectorHard().
-//
 // Masks and disables the specified vector.
+// Overrides IOInterruptController::disableVectorHard().
 //
 void XenonInterruptController::disableVectorHard(IOInterruptVectorNumber vectorNumber, IOInterruptVector *vector) {
   UInt8 pciIrq;
@@ -305,9 +264,8 @@ void XenonInterruptController::disableVectorHard(IOInterruptVectorNumber vectorN
 }
 
 //
-// Overrides IOInterruptController::enableVector().
-//
 // Unmasks and enables the specified vector.
+// Overrides IOInterruptController::enableVector().
 //
 void XenonInterruptController::enableVector(IOInterruptVectorNumber vectorNumber, IOInterruptVector *vector) {
   UInt8 pciIrq;
