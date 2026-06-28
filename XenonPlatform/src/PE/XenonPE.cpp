@@ -14,17 +14,6 @@
 
 OSDefineMetaClassAndStructors(XenonPE, super);
 
-//
-// Overrides IODTPlatformExpert::init().
-//
-bool XenonPE::init(OSDictionary *dictionary) {
-  XenonCheckDebugArgs();
-
-  _tmpExecMemoryOffset = 0;
-
-  return super::init(dictionary);
-}
-
 #define kMolStdMachineType	1
 #define kChipSetTypeMol		170
 
@@ -36,6 +25,7 @@ bool XenonPE::start(IOService *provider) {
   IOService       *service;
   IOPMrootDomain  *pmRootDomain;
 
+  XenonCheckDebugArgs();
   XEDBGLOG("Initializing Xenon platform expert");
 
   if (!mapGPU()) {
