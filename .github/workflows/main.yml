@@ -19,31 +19,32 @@ jobs:
           repository: Goldfish64/MacPPCKernelSDK
           path: MacPPCKernelSDK
 
-      - name: Darling bootstrap
-        run: ./tools/install-darling.sh
+      - name: Darling and CI bootstrap
+        run: |
+          ./tools/install-darling.sh
+          sudo apt -y install python3-lzss
 
-      - name: CI bootstrap prep
-        uses: actions/checkout@v5
+      - name: map_fd bootstrap
+        uses: robinraju/release-downloader@v1
         with:
-          repository: osx360/powerpc-kext-ci
-          token: ${{ secrets.POWERPC_KEXT_CI }}
-          fetch-depth: 1
-          path: powerpc-kext-ci
+          repository: bfleischer/map_fd
+          tag: 'map_fd-1.0'
+          fileName: 'map_fd-1.0.tbz'
+          out-file-path: 'tools'
 
       - name: Xcode3 bootstrap
         uses: robinraju/release-downloader@v1
         with:
-          repository: osx360/powerpc-kext-ci
-          tag: 'xcode3'
-          token: ${{ secrets.POWERPC_KEXT_CI }}
-          fileName: '*.tar.gz'
-          out-file-path: 'powerpc-kext-ci/xcode-gcc'
+          repository: Goldfish64/xcode3-tools-ci
+          tag: 'xcode3-packages'
+          token: ${{ secrets.XCODE3_CI }}
+          fileName: '*.pkg'
+          out-file-path: 'tools'
 
-      - name: CI bootstrap
+      - name: Xcode3 install packages
         run: |
-          cd powerpc-kext-ci
+          cd tools
           sudo darling shell ./install-xcode-tools.sh
-          sudo apt install python3-lzss
           cd ..
 
       - name: Build drivers
