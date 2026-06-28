@@ -19,6 +19,9 @@ jobs:
           repository: Goldfish64/MacPPCKernelSDK
           path: MacPPCKernelSDK
 
+      - name: Darling bootstrap
+        run: ./tools/install-darling.sh
+
       - name: CI bootstrap prep
         uses: actions/checkout@v5
         with:
@@ -36,19 +39,9 @@ jobs:
           fileName: '*.tar.gz'
           out-file-path: 'powerpc-kext-ci/xcode-gcc'
 
-      - name: Darling bootstrap
-        uses: robinraju/release-downloader@v1
-        with:
-          repository: osx360/powerpc-kext-ci
-          tag: 'darling-20250318'
-          token: ${{ secrets.POWERPC_KEXT_CI }}
-          fileName: '*.deb'
-          out-file-path: 'powerpc-kext-ci/darling'
-
       - name: CI bootstrap
         run: |
           cd powerpc-kext-ci
-          ./install-darling.sh
           sudo darling shell ./install-xcode-tools.sh
           sudo apt install python3-lzss
           cd ..
