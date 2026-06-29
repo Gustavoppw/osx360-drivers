@@ -28,7 +28,7 @@ void XenonPE::prepGraphicsFramebuffer(void) {
 
   // Only handle graphics mode.
   if (PE_state.video.v_display) {
-    memcpy((void*)_gpuMem, (void*)_fbMem, 0x1000000);
+    memcpy((void*)_gpuMem, (void*)_fbMem, kXenosFramebufferLength);
 
     //
     // Convert each pixel from GPU format to ARGB.
