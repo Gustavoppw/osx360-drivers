@@ -1,6 +1,7 @@
-<img src="./docs/osx360.png" alt="OSX360" width="250">
-
-# OSX360 - Mac OS X on the Xbox 360
+<div align="center">
+  <img src="./docs/osx360.png" alt="OSX360" width="250" align>
+  <h1>OSX360</h1>
+</div>
 
 [![Build Status](https://github.com/osx360/osx360-drivers/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/osx360/osx360-drivers/actions) [![Build OpenBIOS](https://github.com/osx360/openbios/actions/workflows/main.yml/badge.svg)](https://github.com/osx360/openbios/actions/workflows/main.yml)
 
