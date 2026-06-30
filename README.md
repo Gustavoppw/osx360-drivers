@@ -1,10 +1,10 @@
 <img src="./docs/osx360.png" alt="OSX360" width="250">
 
-# OSX360 - Mac OS X drivers for the Xbox 360
+# OSX360 - Mac OS X on the Xbox 360
 
 [![Build Status](https://github.com/osx360/osx360-drivers/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/osx360/osx360-drivers/actions)
 
-Xbox 360 support kernel extensions for Mac OS X as part of [OSX360](https://github.com/osx360). This is a very early attempt at running Mac OS X on the Xbox 360. There will be functions that do not work, and the system may lock up unexpectedly.
+Xbox 360 support kernel extensions for Mac OS X as part of [OSX360](https://github.com/osx360). This is an early attempt at running Mac OS X on the Xbox 360. There will be functions that do not work, and the system may lock up unexpectedly.
 
 ## Background
 
@@ -30,9 +30,9 @@ Configure the USB for BadUpdate / ABadAvatar if needed. Place openbios.elf and X
 
 #### Boot and installation
 Start XeLL and launch OpenBIOS. OpenBIOS should drop into the shell.
-* To startup from the installation DVD, run `load cd:,\\:tbxi`.
-* To startup from the hard drive, run `load hd:,\\:tbxi`.
-* To startup from the USB stick (if configured as an installer), run `load ud:X,\\:tbxi` where `X` is the installer partition.
+* To startup from the installation DVD, run `boot cd:,\\:tbxi`.
+* To startup from the hard drive, run `boot hd:,\\:tbxi`.
+* To startup from the USB stick (if configured as an installer), run `boot ud:X,\\:tbxi` where `X` is the installer partition.
 * To boot in verbose, run `setenv boot-args -v` prior to booting Mac OS X.
 * To boot in single user, run `setenv boot-args -s` prior to booting Mac OS X.
 
