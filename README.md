@@ -16,7 +16,7 @@ AltiVec is not supported on Xenon in favor of VMX128 which drops some AltiVec in
 ## Installation
 
 #### Requirements
-* An Xbox 360 that is modded either by hardware or with BadUpdate. OpenBIOS will be launched from a USB stick using XeLL. Currently the USB stick must be 4GB or smaller due to some unknown issues with fatfs in OpenBIOS. Larger USBs can be used but the FAT32 partition will need to be restricted to 4GB. Non-4GB NAND consoles will need to have the USB configured as system storage if using ABadAvatar. Refer to [this](https://consolemods.org/wiki/Xbox_360:Bad_Update) page for more information.
+* An Xbox 360 that is modded either by hardware or with BadUpdate. OpenBIOS will be launched from a USB stick using XeLL. Non-4GB NAND consoles will need to have the USB configured as system storage if using ABadAvatar. Refer to [this](https://consolemods.org/wiki/Xbox_360:Bad_Update) page for more information.
 * Mac OS X Tiger 10.4.6 DVD (the CD version may also work, but is currently untested)
   * A USB installer can also work, but will require partitioning that is currently not documented here.
   * Certain DVD drives require a tray cycle before working. So far this needs to be done on the DL120N, but others may be affected.
