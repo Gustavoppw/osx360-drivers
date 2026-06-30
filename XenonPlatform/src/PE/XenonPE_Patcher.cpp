@@ -143,7 +143,7 @@ void XenonPE::wrapPmapEnter(void* pmap, vm_map_offset_t va, ppnum_t pa, vm_prot_
   //
   // Invoke original function.
   //
-  reinterpret_cast<void(*)(void*, vm_map_offset_t, ppnum_t, vm_prot_t, unsigned int, boolean_t)>(_callbackPE->orgPmapEnter)(pmap, va, pa, prot, flags, wired);
+  reinterpret_cast<void(*)(void*, vm_map_offset_t, ppnum_t, vm_prot_t, unsigned int, boolean_t)>(_callbackPE->_orgPmapEnter)(pmap, va, pa, prot, flags, wired);
 
   //
   // Perform instruction patching in userspace physical pages.
@@ -170,17 +170,30 @@ void XenonPE::wrapPmapEnter(void* pmap, vm_map_offset_t va, ppnum_t pa, vm_prot_
 }
 
 void XenonPE::wrapDebugger(const char *str) {
-  reinterpret_cast<void(*)(const char*)>(_callbackPE->orgDebugger)(str);
+  reinterpret_cast<void(*)(const char*)>(_callbackPE->_orgDebugger)(str);
   _callbackPE->refreshFramebuffer();
 }
 
-kern_return_t XenonPE::wrapKmodCreateInternal(kmod_info_t *kmod, kmod_t *id) {
-  kern_return_t result = reinterpret_cast<kern_return_t(*)(kmod_info_t*, kmod_t*)>(_callbackPE->orgKmodCreateInternal)(kmod, id);
-  if (result == KERN_SUCCESS) {
-    printf("Got a new kext %s\n", kmod->name);
+int XenonPE::wrapGradeBinary(cpu_type_t exectype, cpu_subtype_t execsubtype) {
+  switch (execsubtype) {
+    case CPU_SUBTYPE_POWERPC_970:
+    case CPU_SUBTYPE_POWERPC_7450:
+    case CPU_SUBTYPE_POWERPC_7400:
+      return 0;
   }
 
-  return result;
+  return reinterpret_cast<int(*)(cpu_type_t, cpu_subtype_t)>(_callbackPE->_orgGradeBinary)(exectype, execsubtype);
+}
+
+int XenonPE::wrapGradeCpuSubtype(cpu_subtype_t cpu_subtype) {
+  switch (cpu_subtype) {
+    case CPU_SUBTYPE_POWERPC_970:
+    case CPU_SUBTYPE_POWERPC_7450:
+    case CPU_SUBTYPE_POWERPC_7400:
+      return 0;
+  }
+
+  return reinterpret_cast<int(*)(cpu_subtype_t)>(_callbackPE->_orgGradeCpuSubtype)(cpu_subtype);
 }
 
 UInt32 XenonPE::createTrampoline(UInt32 from) {
@@ -276,8 +289,14 @@ bool XenonPE::initPatcher(void) {
   result = vm_protect(kernel_map, (vm_address_t) _tmpExecMemory, sizeof(_tmpExecMemory), FALSE, VM_PROT_ALL);
   XEDBGLOG("Adjusted new perms 0x%X", result);
 
-  routeFunction(resolveKernelSymbol("_Debugger"), (UInt32)&XenonPE::wrapDebugger, &orgDebugger);
-  routeFunction(resolveKernelSymbol("_pmap_enter"), (UInt32)&XenonPE::wrapPmapEnter, &orgPmapEnter);
+  routeFunction(resolveKernelSymbol("_Debugger"), (UInt32)&XenonPE::wrapDebugger, &_orgDebugger);
+  routeFunction(resolveKernelSymbol("_pmap_enter"), (UInt32)&XenonPE::wrapPmapEnter, &_orgPmapEnter);
+
+  if (getKernelVersion() >= kKernelVersionTiger) {
+    routeFunction(resolveKernelSymbol("_grade_binary"), (UInt32)&XenonPE::wrapGradeBinary, &_orgGradeBinary);
+  } else {
+    routeFunction(resolveKernelSymbol("_grade_cpu_subtype"), (UInt32)&XenonPE::wrapGradeCpuSubtype, &_orgGradeCpuSubtype);
+  }
 
   return true;
 }

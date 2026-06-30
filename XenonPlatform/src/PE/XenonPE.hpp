@@ -84,14 +84,10 @@ private:
 
   // Function hooks.
   static XenonPE    *_callbackPE;
-  UInt32            orgDebugger;
-  UInt32            orgKmodCreateInternal;
-  UInt32            orgVmFault;
-  UInt32            orgTrap;
-  UInt32            orgChangePowerStateTo;
-  UInt32            orgVmFaultPage;
-  UInt32            orgPmapEnter;
-  UInt32            orgVmPageCopy;
+  UInt32            _orgDebugger;
+  UInt32            _orgPmapEnter;
+  UInt32            _orgGradeBinary;
+  UInt32            _orgGradeCpuSubtype;
 
   // GPU.
   void handleFramebufferTimer(IOTimerEventSource *sender);
@@ -103,9 +99,10 @@ private:
 
   // Function hooks.
   static void wrapDebugger(const char *str);
-  static kern_return_t wrapKmodCreateInternal(kmod_info_t *kmod, kmod_t *id);
   static void wrapPmapEnter(void* pmap, vm_map_offset_t va, ppnum_t pa, vm_prot_t prot,
                             unsigned int flags, boolean_t wired);
+  static int wrapGradeBinary(cpu_type_t exectype, cpu_subtype_t execsubtype);
+  static int wrapGradeCpuSubtype(cpu_subtype_t cpu_subtype);
 };
 
 #endif
