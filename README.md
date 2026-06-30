@@ -2,7 +2,7 @@
 
 # OSX360 - Mac OS X on the Xbox 360
 
-[![Build Status](https://github.com/osx360/osx360-drivers/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/osx360/osx360-drivers/actions)
+[![Build Status](https://github.com/osx360/osx360-drivers/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/osx360/osx360-drivers/actions) [![Build OpenBIOS](https://github.com/osx360/openbios/actions/workflows/main.yml/badge.svg)](https://github.com/osx360/openbios/actions/workflows/main.yml)
 
 Xbox 360 support kernel extensions for Mac OS X as part of [OSX360](https://github.com/osx360). This is an early attempt at running Mac OS X on the Xbox 360. There will be functions that do not work, and the system may lock up unexpectedly.
 
@@ -18,6 +18,8 @@ AltiVec is not supported on Xenon in favor of VMX128 which drops some AltiVec in
 
 #### Requirements
 * An Xbox 360 that is modded either by hardware or with BadUpdate. OpenBIOS will be launched from a USB stick using XeLL. Non-4GB NAND consoles will need to have the USB configured as system storage if using ABadAvatar. Refer to [this](https://consolemods.org/wiki/Xbox_360:Bad_Update) page for more information.
+* The latest release of [OpenBIOS Xbox 360 fork](https://github.com/osx360/openbios).
+* The latest release of the drivers mkext from the Releases tab.
 * Mac OS X Tiger 10.4.6 DVD (the CD version may also work, but is currently untested)
   * A USB installer can also work, but will require partitioning that is currently not documented here.
   * Certain DVD drives require a tray cycle before working. So far this needs to be done on the DL120N, but others may be affected.
@@ -26,7 +28,7 @@ AltiVec is not supported on Xenon in favor of VMX128 which drops some AltiVec in
   * A USB drive can also work, but is not documented currently and will require some additional work to start from OpenBIOS.
 
 #### USB setup
-Configure the USB for BadUpdate / ABadAvatar if needed. Place openbios.elf and Xbox360.mkext from this repo's releases onto the root of the drive. Configure kboot.conf for XeLL as desired, an example configuration can be found [here](tools/kboot.conf).
+Configure the USB for BadUpdate / ABadAvatar if needed. Place `openbios-xbox360.elf` and `Xbox360.mkext` from this repo's releases onto the root of the drive. Configure kboot.conf for XeLL as desired, an example configuration can be found [here](tools/kboot.conf).
 
 #### Boot and installation
 Start XeLL and launch OpenBIOS. OpenBIOS should drop into the shell.
