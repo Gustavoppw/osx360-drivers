@@ -5,7 +5,7 @@ include common/kext_info.mk
 BUILD_PKG	:=	build_pkg_$(OSX_VERSION)
 KEXTS		:=	XenonPlatform XenonPCI XenonCoreGraphics XenonAudio XenonEthernet XenonSATA XenonSMC
 MKEXT_NAME	:=	Xbox360.mkext
-ARCHIVE_ZIP	:= 	Xeintosh-osx-drivers-$(KEXT_VERSION).zip
+ARCHIVE_ZIP	:= 	osx360-drivers-$(KEXT_VERSION).zip
 
 .PHONY: all clean
 
