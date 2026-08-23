@@ -8,13 +8,12 @@ For a console with RGH/JTAG:
 ```text
 USB (MBR)
 ├── Partition 1 — FAT32
-│   ├── BadUpdate²
 │   ├── XeLL Reloaded
 │   ├── XeLL Launcher
 │   └── OpenBIOS
 │
 └── Partition 2 — HFS+
-    └── Mac OS X Tiger 10.4 installer[¹](#some-details)
+    └── Mac OS X Tiger 10.4 installer¹
 ```
     
 ### Badupdate/abadavatar
@@ -22,13 +21,13 @@ USB (MBR)
 ```text
 USB (MBR)
 ├── Partition 1 — FAT32
-│   ├── BadUpdate[²](#some-details)
+│   ├── BadUpdate²
 │   ├── XeLL Reloaded
 │   ├── XeLL Launcher
 │   └── OpenBIOS
 │
 └── Partition 2 — HFS+
-    └── Mac OS X Tiger 10.4 installer[¹](#some-details)
+    └── Mac OS X Tiger 10.4 installer¹
 ```
 
 ## Some details
