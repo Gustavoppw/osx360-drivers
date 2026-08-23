@@ -14,11 +14,12 @@ USB (MBR)
 │   └── OpenBIOS
 │
 └── Partition 2 — HFS+
-    └── Mac OS X Tiger 10.4 installer¹
+    └── Mac OS X Tiger 10.4 installer[¹](#some-details)
 ```
     
 ### Badupdate/abadavatar
 
+```text
 USB (MBR)
 ├── Partition 1 — FAT32
 │   ├── BadUpdate[²](#some-details)
@@ -28,7 +29,7 @@ USB (MBR)
 │
 └── Partition 2 — HFS+
     └── Mac OS X Tiger 10.4 installer[¹](#some-details)
-
+```
 
 ## Some details
 ¹ Some images might not work, the one i tried i found on the internet archive
