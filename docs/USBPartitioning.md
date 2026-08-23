@@ -33,4 +33,4 @@ USB (MBR)
 ## Some details
 ¹ Some images might not work, the one i tried i found on the internet archive
 
-² a bad avatar *might* if you are sure you're going to install to an external drive, as i had issues with abadavatar without a hard drive that the Xbox 360 could see, even if openbios/OSX Tiger did
+² abadavatar *might* if you are sure you're going to install to an external drive, as i had issues with abadavatar without a hard drive that the Xbox 360 could see, even if openbios/OSX Tiger did
