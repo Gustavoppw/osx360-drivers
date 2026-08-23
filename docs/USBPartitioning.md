@@ -34,6 +34,6 @@ USB (MBR)
 ```
 
 ## Some details
-¹ Some images might not work, the one i tried i found on the internet archive
+¹ Some images *might* not work, as it highly depends on how its partitioned inside the file, [this one](https://archive.org/details/macosx10.4tigerretaildvd) does work as it's the one i used
 
-² Abadavatar *might* work if you are sure you're going to install to an external drive, as i had issues with Abadavatar without a hard drive that the Xbox 360 could see, even if openbios/OSX Tiger did
+² Abadavatar *might* work if you are sure you're going to install to an external drive, as i had issues with Abadavatar without a hard drive that the Xbox 360 could see, even if OpenBIOS/OSX did
