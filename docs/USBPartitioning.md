@@ -1,39 +1,31 @@
-## USB Partition Layout
-The USB MUST USE A **MBR** PARTITION TABLE or it wont be recognized by the console, this is especially necessary for using bad update (or Abadavatar)
+# USB partitioning for OS X Tiger installer
 
-### RGH / JTAG
+Quick summary
+- The Xbox 360 REQUIRES an MBR (msdos) partition table — the console will not recognize GPT.
+- Partition 1: FAT32 (primary) — payloads (XeLL, XeLL Launcher, BadUpdate/Abadavatar, OpenBIOS).
+- Partition 2: HFS+ — Mac OS X Tiger installer (DVD/ISO restored to the partition).
 
-For a console with RGH/JTAG:
+Recommended sizes
+- FAT32: 512 MB–2 GB (1 GB is a good default).
+- HFS+: >= 4 GB (the Tiger image used here is ~2.7 GB; allow 4 GB for buffer).
 
+Example layout
 ```text
 USB (MBR)
-├── Partition 1 — FAT32
-│   ├── XeLL Reloaded
-│   ├── XeLL Launcher
-│   └── OpenBIOS
-│
-└── Partition 2 — HFS+
-    └── Mac OS X Tiger 10.4 installer¹
-```
-    
-### Badupdate/Abadavatar
-
-
-For a console with Badupdate/Abadavatar
-
-```text
-USB (MBR)
-├── Partition 1 — FAT32
-│   ├── BadUpdate²
-│   ├── XeLL Reloaded
-│   ├── XeLL Launcher
-│   └── OpenBIOS
-│
-└── Partition 2 — HFS+
-    └── Mac OS X Tiger 10.4 installer¹
+├─ Partition 1 — FAT32 (primary) — payloads
+└─ Partition 2 — HFS+ — Mac OS X Tiger installer
 ```
 
-## Some details
-¹ Some images *might* not work, as it highly depends on how its partitioned inside the file, [this one](https://archive.org/details/macosx10.4tigerretaildvd) does work as it's the one i used
+Placement & naming
+- Only put the following files in the FAT32 partition root: XeLL Reloaded (xell.bin), OpenBIOS, and the mkets.
+- Other payloads and supporting files can be placed in subdirectories as needed.
+- Format the disk you will install Tiger onto as Mac OS Extended (Journaled). The HFS+ partition on the USB used to carry the installer does not need journaling.
 
-² Abadavatar *might* work if you are sure you're going to install to an external drive, as i had issues with Abadavatar without a hard drive that the Xbox 360 could see, even if OpenBIOS/OSX did
+Deploy note
+- The Tiger ISO/Disk image must be written byte-for-byte into the HFS+ partition (target the partition, not the whole disk). Double-check device/partition before writing — this is destructive.
+
+Notes
+- Abadavatar requires a disk configured as the system disk (internal or external); it will not reliably work without a system disk present.
+
+Reference
+- Known-working Tiger image: https://archive.org/details/macosx10.4tigerretaildvd
