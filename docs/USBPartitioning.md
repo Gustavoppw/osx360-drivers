@@ -1,5 +1,5 @@
 ## USB Partition Layout
-The USB MUST USE A **MBR** PARTITION TABLE or it wont be recognized by the console, this is especially necessary for using bad update (or abadavatar)
+The USB MUST USE A **MBR** PARTITION TABLE or it wont be recognized by the console, this is especially necessary for using bad update (or Abadavatar)
 
 ### RGH / JTAG
 
@@ -16,7 +16,10 @@ USB (MBR)
     └── Mac OS X Tiger 10.4 installer¹
 ```
     
-### Badupdate/abadavatar
+### Badupdate/Abadavatar
+
+
+For a console with Badupdate/Abadavatar
 
 ```text
 USB (MBR)
@@ -33,4 +36,4 @@ USB (MBR)
 ## Some details
 ¹ Some images might not work, the one i tried i found on the internet archive
 
-² abadavatar *might* if you are sure you're going to install to an external drive, as i had issues with abadavatar without a hard drive that the Xbox 360 could see, even if openbios/OSX Tiger did
+² Abadavatar *might* if you are sure you're going to install to an external drive, as i had issues with Abadavatar without a hard drive that the Xbox 360 could see, even if openbios/OSX Tiger did
