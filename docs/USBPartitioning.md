@@ -26,6 +26,3 @@ Deploy note
 
 Notes
 - Abadavatar requires a disk configured as the system disk (internal or external); it will not reliably work without a system disk present.
-
-Reference
-- Known-working Tiger image: https://archive.org/details/macosx10.4tigerretaildvd
